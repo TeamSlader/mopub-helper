@@ -91,11 +91,14 @@ def run(mopubUsername, mopubPassword, mopubOrderKey, csvFilename, lineNamePrefix
 
 
 if __name__ == "__main__":
-    run( 'username',
-    'password',
-    'orderkey',
-    'csv filename',
-    'line order prefix',
-    'custom adapter name',
-    'custom adapter data'
+    start_time = time.time()
+    run(
+        'username',
+        'password',
+        'orderkey',
+        'csv filename',
+        'line order prefix',
+        'custom adapter name',
+        'custom adapter data'
     )
+    print("--- %s seconds elapsed ---" % (time.time() - start_time))
