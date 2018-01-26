@@ -23,7 +23,7 @@ class MopubOrderLinesCreator(object):
         self.browser.find_element_by_id('login-submit').click()
         time.sleep(5)
 
-    def createLineItem(self, customClassName, customData, customMethod, lineName, bid, keywords):
+    def createLineItem(self, customClassName, customData, customMethod, targetUnits, lineName, bid, keywords):
         self.browser.get('https://app.mopub.com/advertise/orders/' + self.orderKey + '/new_line_item/')
         lineNameField = self.browser.find_element_by_id('id_name')
         adType = Select(self.browser.find_element_by_id('id_adgroup_type'))
@@ -33,7 +33,6 @@ class MopubOrderLinesCreator(object):
         customDataField = self.browser.find_element_by_id('id_custom_native-custom_event_class_data')
         customMethodField = self.browser.find_element_by_id('id_custom_native-html_data')
         bidField = self.browser.find_element_by_id('id_bid')
-        unitsCheckbox = self.browser.find_element_by_id('all-adunits')
         keywordsField = self.browser.find_element_by_id('id_keywords')
         submitButton = self.browser.find_element_by_id('submit')
 
@@ -45,11 +44,16 @@ class MopubOrderLinesCreator(object):
         self.fillIn(customDataField, customData)
         self.fillIn(customMethodField, customMethod)
         self.fillIn(bidField, bid)
-        unitsCheckbox.click()
         self.fillIn(keywordsField, keywords)
 
-        submitButton.click()
-        time.sleep(5)
+        for targetUnit in targetUnits:
+            unitCheckboxes = self.browser.find_elements_by_name('adunits')
+            for unitCheckbox in unitCheckboxes:
+                if unitCheckbox.get_attribute('value') == targetUnit:
+                    unitCheckbox.click()
+
+        # submitButton.click()
+        time.sleep(10)
 
     def fillIn(self, field, newValue):
         field.clear()
@@ -82,12 +86,12 @@ class RubiconCSVParser(object):
     def generateLineName(self, prefix, minBid, maxBid):
         return prefix + " $" + "{:0.2f}".format(minBid) + " - $" + "{:0.2f}".format(maxBid)
 
-def run(mopubUsername, mopubPassword, mopubOrderKey, csvFilename, lineNamePrefix, customAdapterName, customData, customMethod = ''):
+def run(mopubUsername, mopubPassword, mopubOrderKey, csvFilename, lineNamePrefix, targetUnits, customAdapterName, customData, customMethod = ''):
     parser = RubiconCSVParser(csvFilename, lineNamePrefix)
     helper = MopubOrderLinesCreator(mopubUsername, mopubPassword, mopubOrderKey)
 
     for line in parser.lines:
-        helper.createLineItem(customAdapterName, customData, customMethod, line[0], line[1], line[2])
+        helper.createLineItem(customAdapterName, customData, customMethod, targetUnits, line[0], line[1], line[2])
 
 
 if __name__ == "__main__":
@@ -98,6 +102,7 @@ if __name__ == "__main__":
         'orderkey',
         'csv filename',
         'line order prefix',
+        ['489469'],
         'custom adapter name',
         'custom adapter data'
     )
