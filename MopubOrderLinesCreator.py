@@ -4,10 +4,14 @@
 # Author: Shuaib Jewon
 # v0.1
 
+import csv
+import time
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
-import time
-import csv
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
 
 
 class MopubOrderLinesCreator(object):
@@ -21,10 +25,14 @@ class MopubOrderLinesCreator(object):
         self.browser.find_element_by_id('id_username').send_keys(username)
         self.browser.find_element_by_id('id_password').send_keys(password)
         self.browser.find_element_by_id('login-submit').click()
-        time.sleep(5)
+        self.waitForElement('revenue-tab', 'Error: Unsuccessful MoPub login')
 
     def createLineItem(self, customClassName, customData, customMethod, targetUnits, lineName, bid, keywords):
+        print("Adding line order " + lineName)
+
         self.browser.get('https://app.mopub.com/advertise/orders/' + self.orderKey + '/new_line_item/')
+        self.waitForElement('id_name')
+
         lineNameField = self.browser.find_element_by_id('id_name')
         adType = Select(self.browser.find_element_by_id('id_adgroup_type'))
         adPriority = Select(self.browser.find_element_by_id('id_priority'))
@@ -53,11 +61,22 @@ class MopubOrderLinesCreator(object):
                     unitCheckbox.click()
 
         submitButton.click()
-        time.sleep(10)
+        self.waitForElement('copy-line-item')
+
+    def waitForElement(self, elementID, errorMessage='Error: Page load timeout'):
+        try:
+            element = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.ID, elementID)))
+        except TimeoutException:
+            print(errorMessage)
+            self.quit()
 
     def fillIn(self, field, newValue):
         field.clear()
         field.send_keys(newValue)
+
+    def quit(self):
+        self.browser.quit()
+        exit()
 
 
 class RubiconCSVParser(object):
@@ -87,12 +106,11 @@ class RubiconCSVParser(object):
         return prefix + " $" + "{:0.2f}".format(minBid) + " - $" + "{:0.2f}".format(maxBid)
 
 def run(mopubUsername, mopubPassword, mopubOrderKey, csvFilename, lineNamePrefix, targetUnits, customAdapterName, customData, customMethod = ''):
-    parser = RubiconCSVParser(csvFilename, lineNamePrefix)
     helper = MopubOrderLinesCreator(mopubUsername, mopubPassword, mopubOrderKey)
 
+    parser = RubiconCSVParser(csvFilename, lineNamePrefix)
     for line in parser.lines:
         helper.createLineItem(customAdapterName, customData, customMethod, targetUnits, line[0], line[1], line[2])
-
 
 if __name__ == "__main__":
     start_time = time.time()
@@ -100,10 +118,10 @@ if __name__ == "__main__":
         'username',
         'password',
         'orderkey',
-        'csv filename',
-        'line order prefix',
-        ['489469'],
+        'rubicon csv filename',
+        'line name prefix',
+        ['ad unit value'],
         'custom adapter name',
         'custom adapter data'
     )
-    print("--- %s seconds elapsed ---" % (time.time() - start_time))
+    print("--- %s seconds ---" % (time.time() - start_time))
