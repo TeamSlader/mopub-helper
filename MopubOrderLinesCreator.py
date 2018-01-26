@@ -52,7 +52,7 @@ class MopubOrderLinesCreator(object):
                 if unitCheckbox.get_attribute('value') == targetUnit:
                     unitCheckbox.click()
 
-        # submitButton.click()
+        submitButton.click()
         time.sleep(10)
 
     def fillIn(self, field, newValue):
