@@ -15,9 +15,9 @@ from selenium.webdriver.common.by import By
 
 
 class MopubOrderLinesCreator(object):
-    def __init__(self, username, password, orderKey):
+    def __init__(self, username, password, order_key):
         self.browser = webdriver.Firefox()
-        self.orderKey = orderKey
+        self.order_key = order_key
         self.login(username, password)
 
     def login(self, username, password):
@@ -25,52 +25,52 @@ class MopubOrderLinesCreator(object):
         self.browser.find_element_by_id('id_username').send_keys(username)
         self.browser.find_element_by_id('id_password').send_keys(password)
         self.browser.find_element_by_id('login-submit').click()
-        self.waitForElement('revenue-tab', 'Error: Unsuccessful MoPub login')
+        self.wait_for_element('revenue-tab', 'Error: Unsuccessful MoPub login')
 
-    def createLineItem(self, customClassName, customData, customMethod, targetUnits, lineName, bid, keywords):
-        print("Adding line order " + lineName)
+    def create_line_item(self, custom_class_name, custom_data, custom_method, target_units, line_name, bid, keywords):
+        print("Adding line order " + line_name)
 
-        self.browser.get('https://app.mopub.com/advertise/orders/' + self.orderKey + '/new_line_item/')
-        self.waitForElement('id_name')
+        self.browser.get('https://app.mopub.com/advertise/orders/' + self.order_key + '/new_line_item/')
+        self.wait_for_element('id_name')
 
-        lineNameField = self.browser.find_element_by_id('id_name')
-        adType = Select(self.browser.find_element_by_id('id_adgroup_type'))
-        adPriority = Select(self.browser.find_element_by_id('id_priority'))
-        networkType = Select(self.browser.find_element_by_id('id_network_type'))
-        customClassNameField = self.browser.find_element_by_id('id_custom_native-custom_event_class_name')
-        customDataField = self.browser.find_element_by_id('id_custom_native-custom_event_class_data')
-        customMethodField = self.browser.find_element_by_id('id_custom_native-html_data')
-        bidField = self.browser.find_element_by_id('id_bid')
-        keywordsField = self.browser.find_element_by_id('id_keywords')
-        submitButton = self.browser.find_element_by_id('submit')
+        line_name_field = self.browser.find_element_by_id('id_name')
+        ad_type = Select(self.browser.find_element_by_id('id_adgroup_type'))
+        ad_priority = Select(self.browser.find_element_by_id('id_priority'))
+        network_type = Select(self.browser.find_element_by_id('id_network_type'))
+        custom_class_name_field = self.browser.find_element_by_id('id_custom_native-custom_event_class_name')
+        custom_data_field = self.browser.find_element_by_id('id_custom_native-custom_event_class_data')
+        custom_method_field = self.browser.find_element_by_id('id_custom_native-html_data')
+        bid_field = self.browser.find_element_by_id('id_bid')
+        keywords_field = self.browser.find_element_by_id('id_keywords')
+        submit_button = self.browser.find_element_by_id('submit')
 
-        self.fillIn(lineNameField, lineName)
-        adType.select_by_visible_text('Network')
-        adPriority.select_by_visible_text('12')
-        networkType.select_by_visible_text('Custom Native Network')
-        self.fillIn(customClassNameField, customClassName)
-        self.fillIn(customDataField, customData)
-        self.fillIn(customMethodField, customMethod)
-        self.fillIn(bidField, bid)
-        self.fillIn(keywordsField, keywords)
+        self.fill_in(line_name_field, line_name)
+        ad_type.select_by_visible_text('Network')
+        ad_priority.select_by_visible_text('12')
+        network_type.select_by_visible_text('Custom Native Network')
+        self.fill_in(custom_class_name_field, custom_class_name)
+        self.fill_in(custom_data_field, custom_data)
+        self.fill_in(custom_method_field, custom_method)
+        self.fill_in(bid_field, bid)
+        self.fill_in(keywords_field, keywords)
 
-        for targetUnit in targetUnits:
-            unitCheckboxes = self.browser.find_elements_by_name('adunits')
-            for unitCheckbox in unitCheckboxes:
-                if unitCheckbox.get_attribute('value') == targetUnit:
-                    unitCheckbox.click()
+        for target_unit in target_units:
+            unit_checkboxes = self.browser.find_elements_by_name('adunits')
+            for unit_checkbox in unit_checkboxes:
+                if unit_checkbox.get_attribute('value') == target_unit:
+                    unit_checkbox.click()
 
-        submitButton.click()
-        self.waitForElement('copy-line-item')
+        submit_button.click()
+        self.wait_for_element('copy-line-item')
 
-    def waitForElement(self, elementID, errorMessage='Error: Page load timeout'):
+    def wait_for_element(self, element_id, error_message='Error: Page load timeout'):
         try:
-            element = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.ID, elementID)))
+            element = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.ID, element_id)))
         except TimeoutException:
-            print(errorMessage)
+            print(error_message)
             self.quit()
 
-    def fillIn(self, field, newValue):
+    def fill_in(self, field, newValue):
         field.clear()
         field.send_keys(newValue)
 
@@ -80,44 +80,43 @@ class MopubOrderLinesCreator(object):
 
 
 class RubiconCSVParser(object):
-
-    def __init__(self, filename, linePrefix):
+    def __init__(self, filename, line_prefix):
         self.filename = filename
-        self.linePrefix = linePrefix
+        self.line_prefix = line_prefix
         self.lines = []
-        self.parseCSV()
+        self.parse_csv()
 
     # TODO: figure out how to handle last line
-    def parseCSV(self):
+    def parse_csv(self):
         with open(self.filename) as f:
             lines = f.readlines()
-            csvReader = csv.reader(lines[1:-1])  # skip the first and last line
-            for row in csvReader:
-                self.appendLine(row)
+            csv_reader = csv.reader(lines[1:-1])  # skip the first and last line
+            for row in csv_reader:
+                self.append_line(row)
 
-    def appendLine(self, row):
-        lineName = self.generateLineName(self.linePrefix, float(row[2]), float(row[3]))
-        lineBid = row[3]
-        lineKeyword = row[0]
-        line = (lineName, lineBid, lineKeyword)
+    def append_line(self, row):
+        line_name = self.generate_line_name(self.line_prefix, float(row[2]), float(row[3]))
+        line_bid = row[3]
+        line_keyword = row[0]
+        line = (line_name, line_bid, line_keyword)
         self.lines.append(line)
 
-    def generateLineName(self, prefix, minBid, maxBid):
-        return prefix + " $" + "{:0.2f}".format(minBid) + " - $" + "{:0.2f}".format(maxBid)
+    def generate_line_name(self, prefix, min_bid, max_bid):
+        return prefix + " $" + "{:0.2f}".format(min_bid) + " - $" + "{:0.2f}".format(max_bid)
 
-def run(mopubUsername, mopubPassword, mopubOrderKey, csvFilename, lineNamePrefix, targetUnits, customAdapterName, customData, customMethod = ''):
-    helper = MopubOrderLinesCreator(mopubUsername, mopubPassword, mopubOrderKey)
-
-    parser = RubiconCSVParser(csvFilename, lineNamePrefix)
+def run(mopubUsername, mopubPassword, mopuborder_key, csvFilename, line_namePrefix, target_units, customAdapterName, custom_data, custom_method = ''):
+    helper = MopubOrderLinesCreator(mopubUsername, mopubPassword, mopuborder_key)
+    parser = RubiconCSVParser(csvFilename, line_namePrefix)
+    
     for line in parser.lines:
-        helper.createLineItem(customAdapterName, customData, customMethod, targetUnits, line[0], line[1], line[2])
+        helper.create_line_item(customAdapterName, custom_data, custom_method, target_units, line[0], line[1], line[2])
 
 if __name__ == "__main__":
     start_time = time.time()
     run(
         'username',
         'password',
-        'orderkey',
+        'order_key',
         'rubicon csv filename',
         'line name prefix',
         ['ad unit value'],
