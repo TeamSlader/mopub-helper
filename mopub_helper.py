@@ -19,6 +19,8 @@ class MopubHelper(object):
         self.login(username, password)
 
     def login(self, username, password):
+        print('Logging in MoPub (' + username + ":******)")
+
         self.browser.get('https://app.mopub.com/account/login/')
         self.browser.find_element_by_id('id_username').send_keys(username)
         self.browser.find_element_by_id('id_password').send_keys(password)
@@ -51,19 +53,23 @@ class MopubHelper(object):
         exit()
 
 class MopubLineHelper(MopubHelper):
-    def update_line_items(self, line_ids,target_units):
+    def update_line_items(self, line_ids,target_units, deselect_units):
+        count = 1
         for line_id in line_ids:
-            self.update_line_item(line_id, target_units)
+            print(str(count) + '. Updating line item with id ' + line_id)
+            self.update_line_item(line_id, target_units, deselect_units)
+            count = count + 1
 
-    def update_line_item(self, line_id, target_units):
-        print('Updating line item with id ' + line_id)
-
+    def update_line_item(self, line_id, target_units, deselect_units):
         url = 'https://app.mopub.com/advertise/line_items/' + line_id + '/edit/'
         
         self.browser.get(url)
         self.wait_for_element('submit', 'Error logging in')
 
-        self.select_target_units(target_units)
+        if deselect_units:
+            self.deselect_target_units(target_units)
+        else:
+            self.select_target_units(target_units)
 
         self.browser.find_element_by_id('submit').click()
         self.wait_for_element('copy-line-item')
@@ -77,13 +83,13 @@ class MopubLineHelper(MopubHelper):
                 if unit_checkbox.get_attribute('value') == target_unit and not unit_checkbox.is_selected():
                     unit_checkbox.click()
 
+    def deselect_target_units(self, target_units):
+        unit_checkboxes = self.browser.find_elements_by_name('adunits')
 
-mopubUsername = ''
-mopubPassword = ''
-mopuborder_key = ''
-target_units = [] # string value of checkboxes e.g. ['510986', '416737']
+        for target_unit in target_units:
+            unit_checkboxes = self.browser.find_elements_by_name('adunits')
+            for unit_checkbox in unit_checkboxes:
+                if unit_checkbox.get_attribute('value') == target_unit and unit_checkbox.is_selected():
+                    unit_checkbox.click()
 
-helper = MopubLineHelper(mopubUsername, mopubPassword)
-line_ids = helper.get_line_items_for_order(mopuborder_key)
-helper.update_line_items(line_ids, target_units)
 
