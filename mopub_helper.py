@@ -61,8 +61,8 @@ class MopubLineHelper(MopubHelper):
 
         self.fill_line_item_custom_class(custom_class_name, custom_data, custom_method, target_units, line_name, bid, keywords)
 
-        #submit_button.click()
-        #self.wait_for_element('copy-line-item')
+        submit_button.click()
+        self.wait_for_element('copy-line-item')
 
     def update_line_items(self, line_ids,target_units, deselect_units):
         count = 1
