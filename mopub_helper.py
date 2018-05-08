@@ -48,6 +48,20 @@ class MopubHelper(object):
                 line_ids.append(url[43:-1])
         return line_ids
 
+    def get_line_items_for_unit(self, unit_key):
+        print('Grabbing line items from unit key ' + unit_key)
+
+        self.browser.get('https://app.mopub.com/ad-unit?key=' + unit_key)
+        time.sleep(5)
+
+        line_ids = []
+        elems = self.browser.find_elements_by_xpath('//a[@href]')
+        for elem in elems:
+            url = elem.get_attribute('href')
+            if url.startswith('https://app.mopub.com/advertise/line_items/'):
+                line_ids.append(url[43:])
+        return line_ids
+
     def quit(self):
         self.browser.quit()
         exit()
