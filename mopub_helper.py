@@ -169,3 +169,27 @@ class RubiconCSVParser(object):
 
     def generate_line_name(self, prefix, min_bid, max_bid):
         return prefix + " $" + "{:0.2f}".format(min_bid) + " - $" + "{:0.2f}".format(max_bid)
+
+class AolCSVParser(object):
+    def __init__(self, filename, line_prefix):
+        self.filename = filename
+        self.line_prefix = line_prefix
+        self.lines = []
+        self.parse_csv()
+
+    def parse_csv(self):
+        with open(self.filename) as f:
+            lines = f.readlines()
+            csv_reader = csv.reader(lines[1:])  # skip the first line
+            for row in csv_reader:
+                self.append_line(row)
+
+    def append_line(self, row):
+        line_name = self.generate_line_name(self.line_prefix, float(row[0]))
+        line_bid = row[0]
+        line_keywords = row[1].replace(',', '\n')
+        line = (line_name, line_bid, line_keywords)
+        self.lines.append(line)
+
+    def generate_line_name(self, prefix, bid):
+        return prefix + " $" + "{:0.2f}".format(bid)
