@@ -15,7 +15,7 @@ from selenium.webdriver.common.by import By
 
 class MopubHelper(object):
     def __init__(self, username, password):
-        self.browser = webdriver.Firefox()
+        self.browser = webdriver.Chrome()
         self.login(username, password)
 
     def login(self, username, password):
