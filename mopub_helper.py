@@ -192,3 +192,29 @@ class AolCSVParser(object):
 
     def generate_line_name(self, prefix, bid):
         return prefix + " $" + "{:0.2f}".format(bid)
+
+# Example template to create line items
+
+user = ''
+pwd = ''
+
+csv_filename = ''
+line_prefix = ''
+
+order_key = ''
+custom_class_name = ''
+custom_data = ''
+custom_method = ''
+target_units = ['', ''] #use inspect tool to grab checkbox value
+
+parser = AolCSVParser(csv_filename, line_prefix)
+helper = MopubLineHelper(user,pwd)
+
+for line in parser.lines:
+    line_name = line[0]
+    bid = line[1]
+    keywords = line[2]
+    helper.create_line_item(order_key, custom_class_name, custom_data, custom_method, target_units, line_name, bid, keywords)
+
+
+
