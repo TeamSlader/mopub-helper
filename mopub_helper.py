@@ -75,7 +75,7 @@ class MopubLineHelper(MopubHelper):
 
         self.fill_line_item_custom_class(custom_class_name, custom_data, custom_method, target_units, line_name, bid, keywords)
 
-        submit_button.click()
+        self.browser.find_element_by_id('id_name').submit()
         self.wait_for_element('copy-line-item')
 
     def update_line_items(self, line_ids,target_units, deselect_units):
@@ -109,8 +109,7 @@ class MopubLineHelper(MopubHelper):
         custom_method_field = self.browser.find_element_by_id('id_custom_native-html_data')
         bid_field = self.browser.find_element_by_id('id_bid')
         keywords_field = self.browser.find_element_by_id('id_keywords')
-        submit_button = self.browser.find_element_by_id('submit')
-
+        
         self.fill_in(line_name_field, line_name)
         ad_type.select_by_visible_text('Network')
         ad_priority.select_by_visible_text('12')
