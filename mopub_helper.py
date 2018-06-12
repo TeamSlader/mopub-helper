@@ -78,6 +78,17 @@ class MopubLineHelper(MopubHelper):
         self.browser.find_element_by_id('id_name').submit()
         self.wait_for_element('copy-line-item')
 
+    def create_non_guaranteed_line_item(self, order_key, target_units, line_name, bid, keyword):
+        print("Adding line order " + line_name)
+
+        self.browser.get('https://app.mopub.com/advertise/orders/' + order_key + '/new_line_item/')
+        self.wait_for_element('id_name')
+
+        self.fill_line_item_non_guaranteed(target_units, line_name, bid, keyword)
+
+        self.browser.find_element_by_id('id_name').submit()
+        self.wait_for_element('copy-line-item')
+
     def update_line_items(self, line_ids,target_units, deselect_units):
         count = 1
         for line_id in line_ids:
@@ -121,6 +132,43 @@ class MopubLineHelper(MopubHelper):
         self.fill_in(keywords_field, keywords)
 
         self.select_target_units(target_units)
+
+    def fill_line_item_non_guaranteed(self, target_units, line_name, bid, keywords):
+        line_name_field = self.browser.find_element_by_id('id_name')
+        ad_type = Select(self.browser.find_element_by_id('id_adgroup_type'))
+        ad_priority = Select(self.browser.find_element_by_id('id_priority'))
+        bid_field = self.browser.find_element_by_id('id_bid')
+        keywords_field = self.browser.find_element_by_id('id_keywords')
+        
+        self.fill_in(line_name_field, line_name)
+        ad_type.select_by_visible_text('Non-Guaranteed')
+        ad_priority.select_by_visible_text('12')
+        self.fill_in(bid_field, bid)
+        self.fill_in(keywords_field, keywords)
+
+        self.select_target_units(target_units)
+
+    def add_vast_creative(self, line_id, format, name, xml):
+        print('Adding creative for line id ' + line_id)
+
+        self.browser.get('https://app.mopub.com/advertise/line_items/' + line_id)
+        self.wait_for_element('copy-line-item')
+
+        self.browser.find_element_by_id('new_creative_button').click()
+
+        format_selection = Select(self.browser.find_element_by_id('id_format'))
+        creative_type = self.browser.find_element_by_id('id_ad_type_3')
+        name_field = self.browser.find_element_by_id('id_name')
+        xml_field = self.browser.find_element_by_id('id_xml_data')
+        save_button = self.browser.find_element_by_class_name('creative-submit')
+
+        format_selection.select_by_visible_text(format)
+        creative_type.click()
+        self.fill_in(name_field, name)
+        self.fill_in(xml_field, xml)
+
+        save_button.click()
+        self.wait_for_element('copy-line-item')
 
     def select_target_units(self, target_units):
         unit_checkboxes = self.browser.find_elements_by_name('adunits')
